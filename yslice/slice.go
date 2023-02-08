@@ -25,10 +25,10 @@ func UniqueMap[E any, R comparable](slice []E, mapper func(value E) R) []R {
 	return Unique(Map(slice, mapper))
 }
 
-func MapByKey[T any, R comparable](slice []T, key func(value T) R) map[R]T {
-	mapped := make(map[R]T, len(slice))
+func MapByKey[T any, R comparable](slice []T, key func(value T) R) map[R][]T {
+	mapped := make(map[R][]T, len(slice))
 	for _, el := range slice {
-		mapped[key(el)] = el
+		mapped[key(el)] = append(mapped[key(el)], el)
 	}
 	return mapped
 }
