@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"context"
 	"github.com/dlsniper/debugger"
-	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 	"io"
+	"mkuznets.com/go/ytils/ylog"
 	"os/exec"
 	"syscall"
 	"time"
@@ -21,6 +21,10 @@ var terminationSequence = []signalDelay{
 	{syscall.SIGINT, 10 * time.Second},
 	{syscall.SIGTERM, 30 * time.Second},
 	{syscall.SIGKILL, 0},
+}
+
+type Commander interface {
+	Command(ctx context.Context) *exec.Cmd
 }
 
 type Execer struct {
@@ -50,7 +54,9 @@ func (e *Execer) WithGracefulExit(ctx context.Context) *Execer {
 	return e
 }
 
-func (e *Execer) Exec(cmd *exec.Cmd) error {
+func (e *Execer) Exec(ctx context.Context, commander Commander) error {
+	cmd := commander.Command(ctx)
+
 	var (
 		stdout, stderr io.ReadCloser
 		err            error
@@ -71,11 +77,14 @@ func (e *Execer) Exec(cmd *exec.Cmd) error {
 
 	g := new(errgroup.Group)
 
+	logger := ylog.Ctx(ctx)
+	logger.Debug("executing command", "cmd", cmd.String())
+
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 
-	pLogger := slog.With("pid", cmd.Process.Pid)
+	pLogger := logger.With("pid", cmd.Process.Pid)
 
 	if stdout != nil {
 		g.Go(func() error {

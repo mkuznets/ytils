@@ -10,7 +10,7 @@ import (
 type ctxKey struct{}
 
 func WithLogger(ctx context.Context, logger *slog.Logger) context.Context {
-	return context.WithValue(ctx, ctxKey{}, &logger)
+	return context.WithValue(ctx, ctxKey{}, logger)
 }
 
 // Ctx returns the Logger associated with the ctx

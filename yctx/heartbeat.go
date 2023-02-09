@@ -3,7 +3,6 @@ package yctx
 import (
 	"context"
 	"github.com/dlsniper/debugger"
-	"golang.org/x/exp/slog"
 	"mkuznets.com/go/ytils/ylog"
 	"mkuznets.com/go/ytils/ytime"
 	"time"
@@ -69,7 +68,7 @@ func (h *Heartbeat) Start() *Heartbeat {
 			}
 
 			idle := time.Since(*last)
-			slog.Debug("heartbeat", "elaplsed", idle)
+			logger.Debug("heartbeat", "elaplsed", idle)
 
 			if idle >= h.timeout {
 				h.cancel()
