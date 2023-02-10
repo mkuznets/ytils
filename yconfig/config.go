@@ -2,7 +2,7 @@ package yconfig
 
 import (
 	"fmt"
-	"github.com/kkyr/fig"
+	"mkuznets.com/go/ytils/yconfig/internal/fig"
 )
 
 type config interface {
@@ -10,30 +10,42 @@ type config interface {
 }
 
 type Reader[T config] struct {
-	filename   string
-	lookupDirs []string
+	dirs []string
+	opts []fig.Option
 }
 
 func New[T config](filename string) *Reader[T] {
 	return &Reader[T]{
-		filename:   filename,
-		lookupDirs: []string{"."},
+		opts: []fig.Option{
+			fig.File(filename),
+		},
+		dirs: []string{"."},
+	}
+}
+
+func NewFromMap[T config](m map[string]interface{}) *Reader[T] {
+	return &Reader[T]{
+		opts: []fig.Option{
+			fig.UseMap(m),
+			fig.IgnoreFile(),
+		},
+		dirs: []string{"."},
 	}
 }
 
 func (r *Reader[T]) WithLookupDir(dir string) *Reader[T] {
-	r.lookupDirs = append(r.lookupDirs, dir)
+	r.dirs = append(r.dirs, dir)
 	return r
 }
 
 func (r *Reader[T]) Read() (T, error) {
 	var cfg T
-	err := fig.Load(
-		&cfg,
-		fig.File(r.filename),
-		fig.Dirs(r.lookupDirs...),
+	opts := append(r.opts,
+		fig.Dirs(r.dirs...),
 		fig.Tag("config"),
 	)
+
+	err := fig.Load(&cfg, opts...)
 	if err != nil {
 		return cfg, fmt.Errorf("load config: %w", err)
 	}
