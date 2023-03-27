@@ -12,10 +12,14 @@ type Command[T any] interface {
 	Execute(args []string) error
 }
 
-func Main[T any]() {
+func Main[T any]() *T {
 	var app T
 	var parser = flags.NewParser(&app, flags.Default)
 	parser.CommandHandler = func(command flags.Commander, args []string) error {
+		if command == nil {
+			return nil
+		}
+
 		c := command.(Command[T])
 		if err := c.Validate(); err != nil {
 			slog.Error("invalid arguments", err)
@@ -46,4 +50,6 @@ func Main[T any]() {
 		slog.Error("invalid arguments", err)
 		os.Exit(1)
 	}
+
+	return &app
 }
