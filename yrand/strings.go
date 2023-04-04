@@ -3,7 +3,7 @@ package yrand
 import (
 	"crypto/rand"
 	"io"
-	"math/big"
+	"mkuznets.com/go/ytils/ybase"
 	"sync"
 )
 
@@ -17,8 +17,5 @@ func Base62(nBytes int) string {
 	if err != nil {
 		panic("failed to read random bytes: " + err.Error())
 	}
-
-	var i big.Int
-	i.SetBytes(b[:])
-	return i.Text(62)
+	return ybase.EncodeBase62(b)
 }
