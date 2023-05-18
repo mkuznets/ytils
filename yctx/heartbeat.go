@@ -2,15 +2,12 @@ package yctx
 
 import (
 	"context"
-	"github.com/dlsniper/debugger"
-	"mkuznets.com/go/ytils/ylog"
 	"mkuznets.com/go/ytils/ytime"
 	"time"
 )
 
 const (
 	DefaultCheckInterval = 10 * time.Second
-	DefaultLeftWarning   = time.Minute
 )
 
 type Heartbeat struct {
@@ -29,7 +26,6 @@ func NewHeartbeat(ctx context.Context, timeout time.Duration) *Heartbeat {
 		cancel:        cancel,
 		timeout:       timeout,
 		checkInterval: DefaultCheckInterval,
-		leftWarning:   DefaultLeftWarning,
 		beatC:         make(chan bool),
 	}
 }
@@ -52,35 +48,20 @@ func (h *Heartbeat) Close() {
 
 func (h *Heartbeat) Start() *Heartbeat {
 	lastBeat := time.Now()
-	logger := ylog.Ctx(h.ctx)
 
 	go func(last *time.Time) {
-		debugger.SetLabels(func() []string {
-			return []string{
-				"pkg", "ytils/yctx",
-				"func", "beats monitor",
-			}
-		})
-
 		for {
 			if h.ctx.Err() != nil {
 				return
 			}
 
 			idle := time.Since(*last)
-			logger.Debug("heartbeat", "elaplsed", idle)
-
 			if idle >= h.timeout {
 				h.cancel()
-				logger.Warn("idle context cancelled")
 				return
 			}
 
 			left := h.timeout - idle
-			if left <= DefaultLeftWarning {
-				logger.Warn("idle context", "left", left)
-			}
-
 			sleep := h.checkInterval
 			if left < h.checkInterval {
 				sleep = left
@@ -90,13 +71,6 @@ func (h *Heartbeat) Start() *Heartbeat {
 	}(&lastBeat)
 
 	go func() {
-		debugger.SetLabels(func() []string {
-			return []string{
-				"pkg", "ytils/yctx",
-				"func", "beats consumer",
-			}
-		})
-
 		for {
 			select {
 			case <-h.beatC:
