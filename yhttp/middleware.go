@@ -52,22 +52,23 @@ func ContextLoggerMiddleware(next http.Handler) http.Handler {
 
 func RequestLoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logAttrs := []slog.Attr{
-			slog.String("method", r.Method),
-			slog.String("path", r.RequestURI),
-		}
+		method := r.Method
+		requestURI := r.RequestURI
 
 		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
-		t1 := time.Now()
+		start := time.Now()
 		defer func() {
-			logAttrs = append(logAttrs,
-				slog.Duration("duration", time.Since(t1)),
+			ctx := r.Context()
+			logger := ylog.Ctx(ctx)
+
+			logger.LogAttrs(ctx, slog.LevelInfo, "API",
+				slog.String("method", method),
+				slog.String("path", requestURI),
+				slog.Duration("duration", time.Since(start)),
 				slog.Int("status", ww.Status()),
 				slog.Int("size", ww.BytesWritten()),
 			)
-
-			ylog.Ctx(r.Context()).LogAttrs(slog.LevelInfo, "API", logAttrs...)
 		}()
 
 		next.ServeHTTP(ww, r)

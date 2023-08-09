@@ -22,19 +22,23 @@ func Ctx(ctx context.Context) *slog.Logger {
 }
 
 func Setup() {
-	var shandler slog.Handler
 	outputFile := os.Stderr
 
-	hopts := slog.HandlerOptions{
+	hopts := &slog.HandlerOptions{
 		AddSource: false,
 		Level:     slog.LevelDebug,
 	}
 
-	if isatty.IsTerminal(outputFile.Fd()) || isatty.IsCygwinTerminal(outputFile.Fd()) {
-		shandler = hopts.NewTextHandler(outputFile)
+	var shandler slog.Handler
+	if fd := outputFile.Fd(); isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd) {
+		shandler = slog.NewTextHandler(outputFile, hopts)
 	} else {
-		shandler = hopts.NewJSONHandler(outputFile)
+		shandler = slog.NewJSONHandler(outputFile, hopts)
 	}
 	slogger := slog.New(shandler)
 	slog.SetDefault(slogger)
+}
+
+func Err(err error) slog.Attr {
+	return slog.Any("err", err)
 }
