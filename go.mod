@@ -1,6 +1,6 @@
 module mkuznets.com/go/ytils
 
-go 1.19
+go 1.24.0
 
 require (
 	github.com/dlsniper/debugger v0.6.0
@@ -12,7 +12,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/crypto v0.7.0
+	golang.org/x/crypto v0.45.0
 	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819
 	golang.org/x/sync v0.1.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -22,6 +22,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
